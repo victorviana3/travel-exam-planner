@@ -1,0 +1,7 @@
+interface:
+  display_name: "Travel Exam Planner"
+  short_description: "Plan exam trips balancing cost, time, sleep, and risk"
+  default_prompt: "Use $travel-exam-planner to plan my trip for an upcoming exam."
+
+policy:
+  allow_implicit_invocation: true

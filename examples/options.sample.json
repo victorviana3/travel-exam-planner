@@ -1,0 +1,56 @@
+{
+  "options": [
+    {
+      "id": "balanced-flight",
+      "label": "Voo direto com chegada na véspera",
+      "cost_brl": 2450,
+      "hours_away": 46,
+      "avoidable_hours": 3,
+      "airport_nights": 0,
+      "low_sleep_events": 0,
+      "air_connections": 0,
+      "airport_changes": 0,
+      "partial_workdays": 0,
+      "full_workdays": 0,
+      "risk_items": [
+        {
+          "reason": "Retorno tem margem moderada após o horário previsto da prova",
+          "points": 2
+        }
+      ],
+      "hard_constraints": [
+        {
+          "name": "Chegar antes do buffer da prova",
+          "satisfied": true,
+          "detail": "Chegada na tarde anterior"
+        }
+      ]
+    },
+    {
+      "id": "cheapest-bus",
+      "label": "Ônibus noturno de ida e volta",
+      "cost_brl": 980,
+      "hours_away": 61,
+      "avoidable_hours": 9,
+      "airport_nights": 0,
+      "low_sleep_events": 1,
+      "air_connections": 0,
+      "airport_changes": 0,
+      "partial_workdays": 1,
+      "full_workdays": 0,
+      "risk_items": [
+        {
+          "reason": "Trânsito rodoviário pode reduzir a margem antes da prova",
+          "points": 3
+        }
+      ],
+      "hard_constraints": [
+        {
+          "name": "Chegar antes do buffer da prova",
+          "satisfied": true,
+          "detail": "Chegada prevista quatro horas antes do buffer mínimo"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "apps": {
+    "google-calendar": {
+      "id": "connector_947e0d954944416db111db556030eea6",
+      "category": "Productivity"
+    },
+    "gmail": {
+      "id": "connector_2128aebfecb84f64a069897515042a44",
+      "category": "Communication"
+    },
+    "decolar": {
+      "id": "asdk_app_69af21349a5881918c973cc6bf477ec4",
+      "category": "Travel"
+    },
+    "skyscanner": {
+      "id": "asdk_app_694546cd042881919bb746a8dc300f38",
+      "category": "Travel"
+    },
+    "booking-com": {
+      "id": "asdk_app_69272cb413a081919685ec3c88d1744e",
+      "category": "Travel"
+    }
+  }
+}

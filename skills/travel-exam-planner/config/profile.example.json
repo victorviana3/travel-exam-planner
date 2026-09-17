@@ -1,0 +1,22 @@
+{
+  "home_base": {
+    "city": "Your city",
+    "state": "Your state",
+    "country": "Brazil"
+  },
+  "work": {
+    "schedule_source": "calendar_or_request",
+    "partial_day_negotiation_possible": false,
+    "full_day_negotiation_possible": false,
+    "assume_negotiation_approved": false
+  },
+  "sleep": {
+    "low_sleep_threshold_hours": 5
+  },
+  "preferences": {
+    "currency": "BRL",
+    "lodging": "simple, safe, and logistically convenient",
+    "airport_overnight": "strongly_discouraged",
+    "default_baggage": null
+  }
+}
