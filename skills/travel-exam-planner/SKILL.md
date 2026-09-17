@@ -45,6 +45,8 @@ For schemas and field meanings, read [references/data-model.md](references/data-
 
 ## Required output
 
+Return three decision-ready itinerary options by default. Return more only when distinct scenario branches or contingencies cannot be represented responsibly in three options. Return fewer only when fewer than three feasible, materially different itineraries exist. Never invent, duplicate, or lightly repackage options merely to reach a target count. When returning a number other than three, state briefly why.
+
 For each selected option, provide:
 
 - a door-to-door timeline;
@@ -57,7 +59,7 @@ For each selected option, provide:
 - source timestamps and important fare or cancellation conditions;
 - the next decision and its deadline, without performing it.
 
-Do not dump an unfiltered list of fares. Prefer three decision-ready options and briefly explain dominated alternatives only when their exclusion is not obvious.
+Do not dump an unfiltered list of fares. Briefly explain dominated alternatives only when their exclusion is not obvious.
 
 ## Deterministic scoring
 
