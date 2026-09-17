@@ -1,6 +1,6 @@
 # Travel Exam Planner
 
-Plugin local para ChatGPT/Codex que planeja viagens porta a porta para provas e concursos. Ele compara custo total, tempo fora de casa, sono, impacto no trabalho e risco operacional, sem misturar reais com pontos de inconveniência.
+Plugin local para ChatGPT/Codex que planeja viagens porta a porta para provas e concursos. Ele compara custo total, tempo fora de casa, sono, impacto no trabalho e risco operacional, sem misturar reais com pontos de inconveniência. O objetivo pode priorizar melhor custo-benefício ou menor custo total.
 
 ## Arquitetura
 
@@ -9,11 +9,13 @@ Plugin local para ChatGPT/Codex que planeja viagens porta a porta para provas e 
 - `.codex-plugin/plugin.json`: manifesto e apresentação do plugin.
 - `tests/`: testes unitários do comparador.
 
+Cada planejamento termina com uma planilha `.xlsx` contendo o resumo dos cenários, custos discriminados, roteiro e links disponíveis para compra ou reserva.
+
 O plugin não inclui um servidor MCP próprio. O cálculo é local e determinístico; inventário e contexto vêm dos apps conectados ou de fontes web verificáveis. Reservas, compras, mensagens e alterações de calendário exigem autorização explícita.
 
 ## Configuração local opcional
 
-Copie `skills/travel-exam-planner/config/profile.example.json` para `~/.config/travel-exam-planner/profile.json` e preencha apenas os dados que deseja usar. Para outro caminho, defina `TRAVEL_EXAM_PLANNER_PROFILE`. O perfil fica fora do pacote para não entrar no cache nem em um compartilhamento do plugin.
+Copie `skills/travel-exam-planner/config/profile.example.json` para `~/.config/travel-exam-planner/profile.json` e preencha apenas os dados que deseja usar. Em `optimization.objective`, escolha `best_value` ou `lowest_total_cost`. Para outro caminho, defina `TRAVEL_EXAM_PLANNER_PROFILE`. O perfil fica fora do pacote para não entrar no cache nem em um compartilhamento do plugin.
 
 ## Testes
 

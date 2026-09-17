@@ -13,6 +13,9 @@
   "sleep": {
     "low_sleep_threshold_hours": 5
   },
+  "optimization": {
+    "objective": "best_value"
+  },
   "preferences": {
     "currency": "BRL",
     "lodging": "simple, safe, and logistically convenient",

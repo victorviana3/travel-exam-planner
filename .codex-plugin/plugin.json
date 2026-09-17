@@ -1,7 +1,7 @@
 {
   "name": "travel-exam-planner",
-  "version": "0.1.0+codex.20260917210307",
-  "description": "Plan door-to-door travel for exams and concursos, balancing total cost, time away, sleep, work impact, and disruption risk.",
+  "version": "0.1.0+codex.20260917211110",
+  "description": "Plan door-to-door travel for exams and concursos, optimizing cost-benefit or total cost and producing an itemized budget workbook.",
   "author": {
     "name": "Local developer"
   },
@@ -9,12 +9,13 @@
   "interface": {
     "displayName": "Travel Exam Planner",
     "shortDescription": "Plan efficient, low-risk trips for exams",
-    "longDescription": "Build and compare door-to-door itineraries for in-person exams and concursos. The plugin combines calendar constraints, official exam facts, flights, buses, lodging, local transport, safety buffers, and total trip cost, then explains the best balance, lowest-cost, and shortest-absence options.",
+    "longDescription": "Build and compare door-to-door itineraries for in-person exams and concursos. The plugin combines calendar constraints, official exam facts, flights, buses, lodging, local transport, safety buffers, and itemized total cost; optimizes for best value or lowest total cost; and returns a workbook with purchase and reservation links when available.",
     "developerName": "Local developer",
     "category": "Travel",
     "capabilities": [
       "Interactive",
-      "Read"
+      "Read",
+      "Write"
     ],
     "defaultPrompt": [
       "Planeje minha viagem para uma prova com o menor tempo fora de casa.",

@@ -28,6 +28,11 @@ Do not add a risk item merely because an itinerary is unfamiliar. State the conc
 
 ## Selection
 
-Do not combine BRL and inconvenience points into a hidden universal score. Use the Pareto frontier over cost, hours away, and inconvenience, then explain the judgment used for the three recommendations.
+Do not combine BRL and inconvenience points into a hidden universal score.
+
+- With `best_value`, use the Pareto frontier over cost, hours away, and inconvenience. Recommend the option whose incremental spending has the strongest practical return in saved time, sleep, work continuity, and reduced failure risk.
+- With `lowest_total_cost`, recommend the cheapest feasible option. Hard constraints and mandatory exam buffers still apply; the objective does not authorize an unsafe or infeasible itinerary.
 
 When two options are similar, quantify what the additional money buys, such as hours saved, a normal night's sleep, a direct flight, or a larger disruption buffer.
+
+For every selected option, explain the financial impact relative to the cheapest feasible option. A saving is not self-explanatory: name the extra travel time, reduced sleep, work impact, connection exposure, or tighter buffer accepted in exchange.

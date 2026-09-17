@@ -43,6 +43,9 @@ SCORE_FIELDS = {
     "full_workdays": "full_workday",
 }
 
+VALID_OBJECTIVES = {"best_value", "lowest_total_cost"}
+VALID_PRICE_STATUSES = {"quote", "estimate", "confirmed"}
+
 
 class InputError(ValueError):
     pass
@@ -55,6 +58,95 @@ def non_negative_number(value: Any, field: str) -> float:
     if not math.isfinite(number) or number < 0:
         raise InputError(f"{field} must be finite and non-negative")
     return number
+
+
+def positive_number(value: Any, field: str) -> float:
+    number = non_negative_number(value, field)
+    if number == 0:
+        raise InputError(f"{field} must be greater than zero")
+    return number
+
+
+def optional_https_url(value: Any, field: str) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str) or not value.startswith("https://"):
+        raise InputError(f"{field} must be null or an https URL")
+    return value
+
+
+def load_objective(raw: Any) -> str:
+    if raw is None:
+        return "best_value"
+    if not isinstance(raw, str) or raw not in VALID_OBJECTIVES:
+        allowed = ", ".join(sorted(VALID_OBJECTIVES))
+        raise InputError(f"objective must be one of: {allowed}")
+    return raw
+
+
+def normalize_cost_items(raw: Any, option_id: str) -> tuple[list[dict[str, Any]], float]:
+    if not isinstance(raw, list) or not raw:
+        raise InputError(f"{option_id}.cost_items must be a non-empty array")
+    normalized: list[dict[str, Any]] = []
+    total = 0.0
+    for index, item in enumerate(raw):
+        field = f"{option_id}.cost_items[{index}]"
+        if not isinstance(item, dict):
+            raise InputError(f"{field} must be an object")
+        category = item.get("category")
+        description = item.get("description")
+        provider = item.get("provider", "")
+        price_status = item.get("price_status")
+        verified_at = item.get("verified_at")
+        conditions = item.get("conditions", "")
+        for name, value in (
+            ("category", category),
+            ("description", description),
+            ("price_status", price_status),
+            ("verified_at", verified_at),
+        ):
+            if not isinstance(value, str) or not value.strip():
+                raise InputError(f"{field}.{name} must be a non-empty string")
+        if price_status not in VALID_PRICE_STATUSES:
+            allowed = ", ".join(sorted(VALID_PRICE_STATUSES))
+            raise InputError(f"{field}.price_status must be one of: {allowed}")
+        if not isinstance(provider, str):
+            raise InputError(f"{field}.provider must be a string")
+        if not isinstance(conditions, str):
+            raise InputError(f"{field}.conditions must be a string")
+        quantity = positive_number(item.get("quantity"), f"{field}.quantity")
+        unit_cost = non_negative_number(
+            item.get("unit_cost_brl"), f"{field}.unit_cost_brl"
+        )
+        item_total = non_negative_number(
+            item.get("total_cost_brl"), f"{field}.total_cost_brl"
+        )
+        calculated = round(quantity * unit_cost, 2)
+        if not math.isclose(item_total, calculated, abs_tol=0.01):
+            raise InputError(
+                f"{field}.total_cost_brl must equal quantity * unit_cost_brl"
+            )
+        normalized.append(
+            {
+                "category": category,
+                "description": description,
+                "provider": provider,
+                "quantity": round(quantity, 2),
+                "unit_cost_brl": round(unit_cost, 2),
+                "total_cost_brl": round(item_total, 2),
+                "price_status": price_status,
+                "purchase_url": optional_https_url(
+                    item.get("purchase_url"), f"{field}.purchase_url"
+                ),
+                "source_url": optional_https_url(
+                    item.get("source_url"), f"{field}.source_url"
+                ),
+                "verified_at": verified_at,
+                "conditions": conditions,
+            }
+        )
+        total += item_total
+    return normalized, round(total, 2)
 
 
 def load_weights(raw: Any) -> dict[str, float]:
@@ -85,6 +177,9 @@ def score_option(raw: Any, weights: dict[str, float]) -> dict[str, Any]:
         field: non_negative_number(raw.get(field), f"{option_id}.{field}")
         for field in NUMERIC_FIELDS
     }
+    cost_items, itemized_total = normalize_cost_items(raw.get("cost_items"), option_id)
+    if not math.isclose(values["cost_brl"], itemized_total, abs_tol=0.01):
+        raise InputError(f"{option_id}.cost_brl must equal the cost_items total")
 
     constraints = raw.get("hard_constraints", [])
     if not isinstance(constraints, list):
@@ -137,6 +232,7 @@ def score_option(raw: Any, weights: dict[str, float]) -> dict[str, Any]:
         "blocking_constraints": blockers,
         "hard_constraints": normalized_constraints,
         "cost_brl": round(values["cost_brl"], 2),
+        "cost_items": cost_items,
         "hours_away": round(values["hours_away"], 2),
         "inconvenience_score": total,
         "score_breakdown": breakdown,
@@ -177,25 +273,64 @@ def best_id(options: list[dict[str, Any]], key: str) -> str | None:
     return min(feasible, key=lambda option: (option[key], option["id"]))["id"]
 
 
+def add_financial_impacts(options: list[dict[str, Any]]) -> None:
+    feasible = [option for option in options if option["feasible"]]
+    cheapest = min(feasible, key=lambda option: (option["cost_brl"], option["id"])) if feasible else None
+    for option in options:
+        if cheapest is None or not option["feasible"]:
+            option["financial_impact"] = None
+            continue
+        additional_cost = round(option["cost_brl"] - cheapest["cost_brl"], 2)
+        percentage = (
+            round(additional_cost / cheapest["cost_brl"] * 100, 2)
+            if cheapest["cost_brl"] > 0
+            else None
+        )
+        hours_saved = round(cheapest["hours_away"] - option["hours_away"], 2)
+        cost_per_hour = (
+            round(additional_cost / hours_saved, 2)
+            if additional_cost > 0 and hours_saved > 0
+            else None
+        )
+        option["financial_impact"] = {
+            "baseline_option_id": cheapest["id"],
+            "additional_cost_brl": additional_cost,
+            "percentage_above_cheapest": percentage,
+            "hours_saved_vs_cheapest": hours_saved,
+            "cost_per_hour_saved_brl": cost_per_hour,
+        }
+
+
 def score_document(document: Any) -> dict[str, Any]:
     if not isinstance(document, dict):
         raise InputError("input must be a JSON object")
     raw_options = document.get("options")
     if not isinstance(raw_options, list) or not raw_options:
         raise InputError("options must be a non-empty array")
+    objective = load_objective(document.get("objective"))
     weights = load_weights(document.get("weights"))
     options = [score_option(raw, weights) for raw in raw_options]
     ids = [option["id"] for option in options]
     if len(ids) != len(set(ids)):
         raise InputError("option ids must be unique")
+    add_financial_impacts(options)
+    lowest_cost = best_id(options, "cost_brl")
+    frontier = pareto_frontier(options)
     return {
+        "objective": objective,
         "weights": weights,
         "options": options,
         "rankings": {
-            "lowest_cost": best_id(options, "cost_brl"),
+            "lowest_cost": lowest_cost,
             "shortest_absence": best_id(options, "hours_away"),
             "lowest_inconvenience": best_id(options, "inconvenience_score"),
-            "pareto_frontier": pareto_frontier(options),
+            "pareto_frontier": frontier,
+        },
+        "objective_result": {
+            "mode": objective,
+            "automatic_selection": lowest_cost if objective == "lowest_total_cost" else None,
+            "candidates": [lowest_cost] if objective == "lowest_total_cost" and lowest_cost else frontier,
+            "requires_cost_benefit_judgment": objective == "best_value",
         },
     }
 

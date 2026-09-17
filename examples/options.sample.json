@@ -1,9 +1,51 @@
 {
+  "objective": "best_value",
   "options": [
     {
       "id": "balanced-flight",
       "label": "Voo direto com chegada na véspera",
       "cost_brl": 2450,
+      "cost_items": [
+        {
+          "category": "flight",
+          "description": "Passagem aérea de ida e volta",
+          "provider": "Decolar",
+          "quantity": 1,
+          "unit_cost_brl": 1800,
+          "total_cost_brl": 1800,
+          "price_status": "quote",
+          "purchase_url": "https://www.decolar.com/passagens-aereas/",
+          "source_url": "https://www.decolar.com/passagens-aereas/",
+          "verified_at": "2026-09-17T18:00:00-03:00",
+          "conditions": "Exemplo; confirmar bagagem e regras tarifárias"
+        },
+        {
+          "category": "lodging",
+          "description": "Duas diárias próximas ao local da prova",
+          "provider": "Booking.com",
+          "quantity": 2,
+          "unit_cost_brl": 250,
+          "total_cost_brl": 500,
+          "price_status": "estimate",
+          "purchase_url": "https://www.booking.com/",
+          "source_url": "https://www.booking.com/",
+          "verified_at": "2026-09-17T18:00:00-03:00",
+          "conditions": "Exemplo; confirmar impostos, cancelamento e horário de check-in"
+        },
+        {
+          "category": "local_transport",
+          "description": "Traslados entre casa, aeroporto, hotel e prova",
+          "provider": "Estimativa local",
+          "quantity": 1,
+          "unit_cost_brl": 150,
+          "total_cost_brl": 150,
+          "price_status": "estimate",
+          "purchase_url": null,
+          "source_url": null,
+          "verified_at": "2026-09-17T18:00:00-03:00",
+          "conditions": "Estimativa agregada para o exemplo"
+        }
+      ],
       "hours_away": 46,
       "avoidable_hours": 3,
       "airport_nights": 0,
@@ -30,6 +72,47 @@
       "id": "cheapest-bus",
       "label": "Ônibus noturno de ida e volta",
       "cost_brl": 980,
+      "cost_items": [
+        {
+          "category": "bus",
+          "description": "Passagem rodoviária de ida e volta",
+          "provider": "ClickBus",
+          "quantity": 1,
+          "unit_cost_brl": 620,
+          "total_cost_brl": 620,
+          "price_status": "quote",
+          "purchase_url": "https://www.clickbus.com.br/",
+          "source_url": "https://www.clickbus.com.br/",
+          "verified_at": "2026-09-17T18:00:00-03:00",
+          "conditions": "Exemplo; confirmar operadora, assento e remarcação"
+        },
+        {
+          "category": "lodging",
+          "description": "Uma diária próxima ao local da prova",
+          "provider": "Booking.com",
+          "quantity": 1,
+          "unit_cost_brl": 250,
+          "total_cost_brl": 250,
+          "price_status": "estimate",
+          "purchase_url": "https://www.booking.com/",
+          "source_url": "https://www.booking.com/",
+          "verified_at": "2026-09-17T18:00:00-03:00",
+          "conditions": "Exemplo; confirmar impostos e cancelamento"
+        },
+        {
+          "category": "local_transport",
+          "description": "Traslados entre casa, rodoviária, hotel e prova",
+          "provider": "Estimativa local",
+          "quantity": 1,
+          "unit_cost_brl": 110,
+          "total_cost_brl": 110,
+          "price_status": "estimate",
+          "purchase_url": null,
+          "source_url": null,
+          "verified_at": "2026-09-17T18:00:00-03:00",
+          "conditions": "Estimativa agregada para o exemplo"
+        }
+      ],
       "hours_away": 61,
       "avoidable_hours": 9,
       "airport_nights": 0,
