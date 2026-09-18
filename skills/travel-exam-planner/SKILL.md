@@ -1,6 +1,6 @@
 ---
 name: travel-exam-planner
-description: Plan door-to-door travel for in-person exams and concursos by combining the user's profile, calendar constraints, official exam details, current transport and lodging research, and a transparent comparison of cost, time, sleep, work impact, and risk. Use when planning, comparing, revising, or monitoring exam travel; do not use for ordinary leisure travel.
+description: Plan door-to-door travel for in-person exams and concursos by combining the user's profile, calendar constraints, official exam details, current transport and lodging research, and a transparent comparison of cost, time, sleep, work impact, and risk. Use when planning, comparing, or revising exam travel, including evaluating how changed prices or schedules affect an existing plan; do not use for ordinary leisure travel or create recurring monitoring without explicit authorization.
 ---
 
 # Travel Exam Planner
@@ -26,7 +26,7 @@ Use `optimization.objective` from the private profile when present. Supported va
 
 ## Tool routing
 
-- Use Google Calendar to read schedule constraints when it is connected and the user asks to include their calendar. Calendar reads do not authorize event changes.
+- Use Google Calendar by default to read schedule constraints relevant to the trip when it is connected. Respect an explicit request not to use it, do not inspect unrelated events, and continue without it when unavailable. Calendar reads do not authorize event changes.
 - Use Gmail only when the user asks to inspect exam notices, tickets, or reservations in email. Do not search unrelated mail.
 - Prefer Decolar and Skyscanner for current flight discovery and Booking.com for lodging when those apps are available. Treat app results as quotes or booking handoffs, not completed purchases.
 - For flexible airfare discovery, prefer Skyscanner's cheapest-dates-in-month capability. Decolar's month plus stay-range search is the fallback or cross-check. Use exact-date search only after flexible discovery has produced candidate date pairs.
@@ -35,7 +35,7 @@ Use `optimization.objective` from the private profile when present. Supported va
 
 ## Workflow
 
-1. Identify the exam from the request and calendar. Confirm date, city, venue, start time, duration, and official notices from authoritative sources.
+1. Identify the exam from the request and the connected calendar by default, unless the user opts out. Limit calendar inspection to information relevant to the trip. Confirm date, city, venue, start time, duration, and official notices from authoritative sources.
 2. Establish hard constraints, negotiable constraints, and preferences. Calculate from the user's real origin, including access to the departure terminal and the final return home.
 3. Generate branches for unresolved facts such as morning versus afternoon exams. Do not blend incompatible branches.
 4. Before choosing itinerary scenarios, run flexible-date discovery for flights and evaluate other plausible long-distance modes. Read and follow [references/date-search.md](references/date-search.md). The search must identify the lowest airfare found whose itinerary contains the exam, the lowest complete trip cost, and the shortest feasible absence; these may be different combinations.
@@ -67,7 +67,7 @@ For each selected option, provide:
 - inconvenience score with a short breakdown;
 - source timestamps and important fare or cancellation conditions;
 - purchase or reservation links for each item when a usable handoff URL exists, clearly distinguishing an exact offer from a provider search page;
-- the next decision and its deadline, without performing it.
+- the next decision and an evidence-based deadline when one can be established, without performing the action or inventing urgency.
 
 Do not dump an unfiltered list of fares. Briefly explain dominated alternatives only when their exclusion is not obvious.
 
@@ -81,4 +81,4 @@ Prepare a JSON document matching the option schema, then run from this skill dir
 python3 scripts/score_options.py input.json --pretty
 ```
 
-Use the script's hard-constraint results, score breakdown, and Pareto frontier as evidence. The script does not choose the final itinerary and does not replace source verification.
+Use the script's hard-constraint results, score breakdown, and Pareto frontier as evidence. For `lowest_total_cost`, treat its automatic selection as the recommendation after verifying the underlying sources and assumptions. For `best_value`, make the final cost-benefit judgment among its candidates. The script never replaces source verification.

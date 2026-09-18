@@ -89,7 +89,7 @@ O plugin pode usar, conforme a disponibilidade e a solicitação do usuário:
 - Booking.com, para pesquisar hospedagem;
 - sites oficiais de organizadoras, companhias, operadoras, aeroportos, hotéis e transporte urbano.
 
-O acesso ao calendário ou ao e-mail só é usado quando solicitado e quando o respectivo conector está autenticado. Se uma integração não estiver disponível, o planejamento pode continuar com fontes públicas adequadas, deixando essa limitação visível no resultado.
+Quando o Google Calendar está conectado, o planejador consulta por padrão apenas os compromissos relevantes para a viagem; você pode pedir que ele não use o calendário. O Gmail só é consultado quando solicitado. Se uma integração não estiver disponível, o planejamento pode continuar com fontes públicas adequadas, deixando essa limitação visível no resultado.
 
 ## Privacidade e controle
 
