@@ -18,7 +18,9 @@ For each candidate, capture:
 - cancellation or change restrictions that affect the decision;
 - whether the result is a quote, a booking handoff, or a confirmed purchasable offer.
 
-Search round trips and separate one-way tickets when useful. Check adjacent dates and alternate airports only when the complete door-to-door result can improve.
+Complete the flexible-date discovery in [date-search.md](date-search.md) before selecting scenarios. Prefer Skyscanner's cheapest-dates-in-month capability for a fixed route; use Decolar's month and stay-range search as fallback or cross-check. Search round trips and separate one-way tickets when useful, and alternate airports when the complete door-to-door result can improve.
+
+When transport inventory is already on sale, a decision-ready scenario must use an exact-date quote for its main long-distance segment. Route pages, typical fares, snippets, and undated estimates may support preliminary planning but cannot establish the cheapest date or a purchase-ready total.
 
 For Brazilian intercity buses and urban transport, use direct operators or reputable aggregators when no suitable connected tool exists. Cross-check schedules whose failure would threaten the exam.
 

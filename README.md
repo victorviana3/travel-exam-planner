@@ -1,6 +1,6 @@
 # Travel Exam Planner
 
-Plugin local para ChatGPT/Codex que planeja viagens porta a porta para provas e concursos. Ele compara custo total, tempo fora de casa, sono, impacto no trabalho e risco operacional, sem misturar reais com pontos de inconveniência. O objetivo pode priorizar melhor custo-benefício ou menor custo total.
+Plugin local para ChatGPT/Codex que planeja viagens porta a porta para provas e concursos. Ele usa busca flexível para descobrir as datas aéreas mais baratas que comportam a prova, compara modos de transporte pelo itinerário completo — incluindo sono útil em deslocamentos noturnos — e elimina alternativas dominadas. O objetivo pode priorizar melhor custo-benefício ou menor custo total.
 
 ## Arquitetura
 

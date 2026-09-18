@@ -45,6 +45,7 @@ SCORE_FIELDS = {
 
 VALID_OBJECTIVES = {"best_value", "lowest_total_cost"}
 VALID_PRICE_STATUSES = {"quote", "estimate", "confirmed"}
+VALID_SLEEP_QUALITIES = {"poor", "limited", "adequate"}
 
 
 class InputError(ValueError):
@@ -163,6 +164,40 @@ def load_weights(raw: Any) -> dict[str, float]:
     return weights
 
 
+def normalize_sleep_assessment(raw: Any, option_id: str) -> dict[str, Any] | None:
+    if raw is None:
+        return None
+    if not isinstance(raw, dict):
+        raise InputError(f"{option_id}.sleep_assessment must be an object")
+    quality = raw.get("quality")
+    if quality not in VALID_SLEEP_QUALITIES:
+        allowed = ", ".join(sorted(VALID_SLEEP_QUALITIES))
+        raise InputError(
+            f"{option_id}.sleep_assessment.quality must be one of: {allowed}"
+        )
+    detail = raw.get("detail")
+    if not isinstance(detail, str) or not detail.strip():
+        raise InputError(f"{option_id}.sleep_assessment.detail must be a non-empty string")
+    return {
+        "quality": quality,
+        "usable_sleep_hours": round(
+            non_negative_number(
+                raw.get("usable_sleep_hours"),
+                f"{option_id}.sleep_assessment.usable_sleep_hours",
+            ),
+            2,
+        ),
+        "normal_sleep_hours_covered": round(
+            non_negative_number(
+                raw.get("normal_sleep_hours_covered"),
+                f"{option_id}.sleep_assessment.normal_sleep_hours_covered",
+            ),
+            2,
+        ),
+        "detail": detail,
+    }
+
+
 def score_option(raw: Any, weights: dict[str, float]) -> dict[str, Any]:
     if not isinstance(raw, dict):
         raise InputError("each option must be an object")
@@ -177,6 +212,9 @@ def score_option(raw: Any, weights: dict[str, float]) -> dict[str, Any]:
         field: non_negative_number(raw.get(field), f"{option_id}.{field}")
         for field in NUMERIC_FIELDS
     }
+    sleep_assessment = normalize_sleep_assessment(
+        raw.get("sleep_assessment"), option_id
+    )
     cost_items, itemized_total = normalize_cost_items(raw.get("cost_items"), option_id)
     if not math.isclose(values["cost_brl"], itemized_total, abs_tol=0.01):
         raise InputError(f"{option_id}.cost_brl must equal the cost_items total")
@@ -234,17 +272,17 @@ def score_option(raw: Any, weights: dict[str, float]) -> dict[str, Any]:
         "cost_brl": round(values["cost_brl"], 2),
         "cost_items": cost_items,
         "hours_away": round(values["hours_away"], 2),
+        "sleep_assessment": sleep_assessment,
         "inconvenience_score": total,
         "score_breakdown": breakdown,
         "risk_items": normalized_risks,
     }
 
 
-def pareto_frontier(options: list[dict[str, Any]]) -> list[str]:
+def dominance_map(options: list[dict[str, Any]]) -> dict[str, list[str]]:
     feasible = [option for option in options if option["feasible"]]
-    frontier: list[str] = []
+    dominated_by: dict[str, list[str]] = {option["id"]: [] for option in options}
     for candidate in feasible:
-        dominated = False
         for other in feasible:
             if other is candidate:
                 continue
@@ -259,11 +297,24 @@ def pareto_frontier(options: list[dict[str, Any]]) -> list[str]:
                 or other["inconvenience_score"] < candidate["inconvenience_score"]
             )
             if no_worse and strictly_better:
-                dominated = True
-                break
-        if not dominated:
-            frontier.append(candidate["id"])
-    return frontier
+                dominated_by[candidate["id"]].append(other["id"])
+        dominated_by[candidate["id"]].sort()
+    return dominated_by
+
+
+def apply_dominance(options: list[dict[str, Any]]) -> tuple[list[str], dict[str, list[str]]]:
+    dominated_by = dominance_map(options)
+    frontier: list[str] = []
+    for option in options:
+        option["dominated_by"] = dominated_by[option["id"]]
+        if not option["feasible"]:
+            option["selection_status"] = "infeasible"
+        elif option["dominated_by"]:
+            option["selection_status"] = "dominated"
+        else:
+            option["selection_status"] = "eligible"
+            frontier.append(option["id"])
+    return frontier, dominated_by
 
 
 def best_id(options: list[dict[str, Any]], key: str) -> str | None:
@@ -271,6 +322,21 @@ def best_id(options: list[dict[str, Any]], key: str) -> str | None:
     if not feasible:
         return None
     return min(feasible, key=lambda option: (option[key], option["id"]))["id"]
+
+
+def lowest_cost_id(options: list[dict[str, Any]]) -> str | None:
+    feasible = [option for option in options if option["feasible"]]
+    if not feasible:
+        return None
+    return min(
+        feasible,
+        key=lambda option: (
+            option["cost_brl"],
+            option["inconvenience_score"],
+            option["hours_away"],
+            option["id"],
+        ),
+    )["id"]
 
 
 def add_financial_impacts(options: list[dict[str, Any]]) -> None:
@@ -314,8 +380,13 @@ def score_document(document: Any) -> dict[str, Any]:
     if len(ids) != len(set(ids)):
         raise InputError("option ids must be unique")
     add_financial_impacts(options)
-    lowest_cost = best_id(options, "cost_brl")
-    frontier = pareto_frontier(options)
+    lowest_cost = lowest_cost_id(options)
+    frontier, dominated_by = apply_dominance(options)
+    excluded_dominated = [
+        {"id": option["id"], "dominated_by": dominated_by[option["id"]]}
+        for option in options
+        if option["selection_status"] == "dominated"
+    ]
     return {
         "objective": objective,
         "weights": weights,
@@ -325,11 +396,16 @@ def score_document(document: Any) -> dict[str, Any]:
             "shortest_absence": best_id(options, "hours_away"),
             "lowest_inconvenience": best_id(options, "inconvenience_score"),
             "pareto_frontier": frontier,
+            "dominated": excluded_dominated,
         },
         "objective_result": {
             "mode": objective,
             "automatic_selection": lowest_cost if objective == "lowest_total_cost" else None,
             "candidates": [lowest_cost] if objective == "lowest_total_cost" and lowest_cost else frontier,
+            "excluded_dominated": excluded_dominated,
+            "maximum_decision_ready_options": (
+                1 if objective == "lowest_total_cost" and lowest_cost else len(frontier)
+            ),
             "requires_cost_benefit_judgment": objective == "best_value",
         },
     }

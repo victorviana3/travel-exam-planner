@@ -7,8 +7,9 @@ Create one `.xlsx` workbook after the itinerary analysis. Use the available spre
 Use these worksheets unless the available data is too small to justify a separate itinerary sheet:
 
 1. `Resumo`: configured objective, recommended option, scenario totals, difference from the cheapest feasible option, percentage difference, hours away, hours saved, cost per hour saved, inconvenience score, principal risks, and recommendation rationale.
-2. `Custos`: one row per cost item with scenario, category, description, provider, quantity, unit cost, total cost, price status, important conditions, verification timestamp, purchase/reservation link, and source link.
-3. `Roteiro`: chronological door-to-door events for each scenario, including local access, terminals, transport segments, lodging, exam buffer, and return home.
+2. `Pesquisa de datas`: one row per retained fare/date combination, including dates, times, provider, stops, transport fare, lodging nights, complete trip cost, hours away, work impact, quote status, verification timestamp, and source or handoff link. Record the flexible-search horizon and identify the lowest indicative airfare found, lowest complete cost, shortest absence, non-dominated candidates, and excluded dominated results.
+3. `Custos`: one row per cost item with scenario, category, description, provider, quantity, unit cost, total cost, price status, important conditions, verification timestamp, purchase/reservation link, and source link.
+4. `Roteiro`: chronological door-to-door events for each scenario, including local access, terminals, transport segments, lodging, exam buffer, and return home.
 
 ## Calculation and link rules
 

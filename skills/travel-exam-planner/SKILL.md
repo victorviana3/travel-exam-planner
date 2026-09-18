@@ -29,6 +29,7 @@ Use `optimization.objective` from the private profile when present. Supported va
 - Use Google Calendar to read schedule constraints when it is connected and the user asks to include their calendar. Calendar reads do not authorize event changes.
 - Use Gmail only when the user asks to inspect exam notices, tickets, or reservations in email. Do not search unrelated mail.
 - Prefer Decolar and Skyscanner for current flight discovery and Booking.com for lodging when those apps are available. Treat app results as quotes or booking handoffs, not completed purchases.
+- For flexible airfare discovery, prefer Skyscanner's cheapest-dates-in-month capability. Decolar's month plus stay-range search is the fallback or cross-check. Use exact-date search only after flexible discovery has produced candidate date pairs.
 - Use direct carrier, bus-operator, hotel, airport, urban-transit, and organizing-body pages to verify decision-critical details. Use web search when a dedicated connector is unavailable or incomplete.
 - Do not claim that a connector was checked if it was unavailable, unauthenticated, or returned no usable result. State the fallback used.
 
@@ -36,20 +37,22 @@ Use `optimization.objective` from the private profile when present. Supported va
 
 1. Identify the exam from the request and calendar. Confirm date, city, venue, start time, duration, and official notices from authoritative sources.
 2. Establish hard constraints, negotiable constraints, and preferences. Calculate from the user's real origin, including access to the departure terminal and the final return home.
-3. Generate scenarios for unresolved facts such as morning versus afternoon exams. Do not blend incompatible scenarios.
-4. Research current flights, intercity buses, lodging, and local transport using the routing rules above, available connected tools, and direct web sources. Follow [references/source-policy.md](references/source-policy.md).
-5. Normalize every viable option into the schema in [references/data-model.md](references/data-model.md). Include every unavoidable cost created by the itinerary as a separate cost item, including terminal access, fares, baggage, lodging nights, taxes, local transport, meals created by the itinerary, and booking fees.
-6. Filter options that violate hard constraints. Score the remaining options with `scripts/score_options.py` and the rules in [references/scoring.md](references/scoring.md).
-7. Apply the configured optimization objective:
+3. Generate branches for unresolved facts such as morning versus afternoon exams. Do not blend incompatible branches.
+4. Before choosing itinerary scenarios, run flexible-date discovery for flights and evaluate other plausible long-distance modes. Read and follow [references/date-search.md](references/date-search.md). The search must identify the lowest airfare found whose itinerary contains the exam, the lowest complete trip cost, and the shortest feasible absence; these may be different combinations.
+5. Research current flights, intercity buses, lodging, and local transport using the routing rules above, available connected tools, and direct web sources. Follow [references/source-policy.md](references/source-policy.md).
+6. Convert the promising date combinations into complete door-to-door options. Normalize every viable option into the schema in [references/data-model.md](references/data-model.md). Include every unavoidable cost created by the itinerary as a separate cost item, including terminal access, fares, baggage, lodging nights, taxes, local transport, meals created by the itinerary, and booking fees.
+7. Filter options that violate hard constraints. Score the remaining options with `scripts/score_options.py` and the rules in [references/scoring.md](references/scoring.md).
+8. Apply the configured optimization objective:
    - `best_value`: choose the strongest option on the Pareto frontier after comparing the additional money with hours saved, sleep preserved, work disruption avoided, and risk reduced. Do not collapse BRL and inconvenience points into one hidden score.
    - `lowest_total_cost`: recommend the lowest-cost feasible option after hard constraints and mandatory buffers. Do not buy a lower price by making the itinerary infeasible; explain the operational inconvenience and risk retained.
-8. Keep the other selected options as meaningful alternatives, including the cheapest feasible and shortest-absence options when they differ from the recommendation.
-9. State what was verified, when it was verified, what remains uncertain, and whether each decision is safe now or should wait.
-10. Create the final spreadsheet according to [references/spreadsheet-output.md](references/spreadsheet-output.md). Do not finish with prose alone.
+9. Select final scenarios from `objective_result.candidates`. Never use a dominated option merely to reach the default count. A dominated option may appear only as a brief excluded alternative or as a separately labeled contingency that mitigates a specific, verified failure mode unavailable in the eligible options.
+10. Keep other selected options only when they are meaningful alternatives, including the cheapest feasible and shortest-absence options when they differ from the recommendation.
+11. State what was verified, when it was verified, what remains uncertain, and whether each decision is safe now or should wait.
+12. Create the final spreadsheet according to [references/spreadsheet-output.md](references/spreadsheet-output.md). Do not finish with prose alone.
 
 ## Required output
 
-Return three decision-ready itinerary options by default. Return more only when distinct scenario branches or contingencies cannot be represented responsibly in three options. Return fewer only when fewer than three feasible, materially different itineraries exist. Never invent, duplicate, or lightly repackage options merely to reach a target count. When returning a number other than three, state briefly why.
+Return up to three decision-ready itinerary options by default. Return more only when distinct scenario branches or contingencies cannot be represented responsibly in three options. Return fewer whenever fewer than three non-dominated, materially different itineraries exist. Never invent, duplicate, retain a dominated option, or lightly repackage options merely to reach a target count. When returning a number other than three, state briefly why.
 
 For each selected option, provide:
 

@@ -74,6 +74,57 @@ class ScoreOptionsTest(unittest.TestCase):
         worse = option("worse", cost_brl=1000, hours_away=48, avoidable_hours=4)
         result = MODULE.score_document({"options": [better, worse]})
         self.assertEqual(result["rankings"]["pareto_frontier"], ["better"])
+        self.assertEqual(result["options"][0]["selection_status"], "eligible")
+        self.assertEqual(result["options"][1]["selection_status"], "dominated")
+        self.assertEqual(result["options"][1]["dominated_by"], ["better"])
+        self.assertEqual(
+            result["objective_result"]["excluded_dominated"],
+            [{"id": "worse", "dominated_by": ["better"]}],
+        )
+        self.assertEqual(result["objective_result"]["maximum_decision_ready_options"], 1)
+
+    def test_equal_cost_objective_chooses_non_dominated_option(self):
+        slower = option("a-slower", cost_brl=900, hours_away=52, avoidable_hours=6)
+        better = option("z-better", cost_brl=900, hours_away=40, avoidable_hours=2)
+        result = MODULE.score_document(
+            {"objective": "lowest_total_cost", "options": [slower, better]}
+        )
+        self.assertEqual(result["objective_result"]["automatic_selection"], "z-better")
+        self.assertEqual(result["objective_result"]["candidates"], ["z-better"])
+        self.assertEqual(result["options"][0]["selection_status"], "dominated")
+
+    def test_sleep_assessment_is_preserved_for_whole_trip_comparison(self):
+        overnight = option(
+            "overnight",
+            sleep_assessment={
+                "quality": "adequate",
+                "usable_sleep_hours": 7,
+                "normal_sleep_hours_covered": 6.5,
+                "detail": "Continuous overnight segment in a sleeper seat",
+            },
+        )
+        result = MODULE.score_document({"options": [overnight]})
+        self.assertEqual(
+            result["options"][0]["sleep_assessment"]["usable_sleep_hours"], 7
+        )
+
+    def test_sleep_assessment_rejects_unsupported_quality(self):
+        with self.assertRaises(MODULE.InputError):
+            MODULE.score_document(
+                {
+                    "options": [
+                        option(
+                            "overnight",
+                            sleep_assessment={
+                                "quality": "excellent",
+                                "usable_sleep_hours": 7,
+                                "normal_sleep_hours_covered": 7,
+                                "detail": "Unsupported label",
+                            },
+                        )
+                    ]
+                }
+            )
 
     def test_negative_value_is_rejected(self):
         with self.assertRaises(MODULE.InputError):
