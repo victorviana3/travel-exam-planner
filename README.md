@@ -22,7 +22,7 @@ Copie `skills/travel-exam-planner/config/profile.example.json` para `~/.config/t
 ```bash
 python3 -m unittest discover -s tests -v
 python3 skills/travel-exam-planner/scripts/score_options.py examples/options.sample.json --pretty
-python3 /home/victor/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py .
+python3 <caminho-para-o-validador-de-plugins>/validate_plugin.py .
 ```
 
 ## Instalação local
